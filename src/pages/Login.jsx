@@ -1,76 +1,68 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import AuthCard from "../components/AuthCard";
+import { useState } from "react";
+import { Link, Navigate, useLocation } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { isSupabaseConfigured } from "../services/supabaseClient";
+import AuthCard from "../components/AuthCard";
+
+const inputCls =
+  "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-600";
 
 export default function Login() {
-  const { session, profile, loading, signIn, profileError } = useAuth();
-  const navigate = useNavigate();
+  const { session, signIn } = useAuth();
   const location = useLocation();
-  const redirectTo = location.state?.from?.pathname ?? "/";
-  const notice = location.state?.notice;
+  const from = location.state?.from?.pathname ?? "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  // Once logged in and the profile is loaded, go to the dashboard
-  useEffect(() => {
-    if (!loading && session && profile) navigate(redirectTo, { replace: true });
-  }, [loading, session, profile, navigate, redirectTo]);
+  if (session) return <Navigate to={from} replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    if (!isSupabaseConfigured) {
+      setError("The database is not configured yet. Check your environment variables.");
+      return;
+    }
     if (!email.trim() || !password) {
       setError("Enter your email and password.");
       return;
     }
-    setSubmitting(true);
-    const { error: signInError } = await signIn(email.trim(), password);
-    setSubmitting(false);
-    if (signInError) setError("Email or password is incorrect.");
+    setBusy(true);
+    const { error: err } = await signIn(email.trim(), password);
+    setBusy(false);
+    // Same message for every failure so attackers can't tell which part was wrong
+    if (err) setError("Invalid email or password.");
   }
 
-  const inputCls = "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm";
-
   return (
-    <AuthCard title="Sign in" subtitle="Use the account given to you by the pharmacy administrator.">
-      {!isSupabaseConfigured && (
-        <p className="mb-4 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
-          Database not connected. Set the Supabase environment variables first.
-        </p>
-      )}
-      {notice && <p className="mb-4 rounded-md bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
-      {(error || profileError) && (
-        <p role="alert" className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
-          {error || profileError}
-        </p>
-      )}
-
-      <form onSubmit={handleSubmit} noValidate>
-        <label className="block text-sm font-medium text-slate-700">
-          Email
-          <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
-        </label>
-        <label className="mt-4 block text-sm font-medium text-slate-700">
-          Password
-          <input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} />
-        </label>
+    <AuthCard
+      title="Sign in"
+      subtitle="Pharmacy staff only"
+      footer={<Link to="/forgot-password" className="font-medium text-brand-700 hover:underline">Forgot password?</Link>}
+    >
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <div>
+          <label htmlFor="email" className="text-sm font-medium text-slate-700">Email</label>
+          <input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
+        </div>
+        <div>
+          <label htmlFor="password" className="text-sm font-medium text-slate-700">Password</label>
+          <input id="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} />
+        </div>
+        {error && <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         <button
           type="submit"
-          disabled={submitting || !isSupabaseConfigured}
-          className="mt-5 w-full rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+          disabled={busy}
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
         >
-          {submitting ? "Signing in…" : "Sign in"}
+          {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+          {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>
-
-      <p className="mt-4 text-center text-sm">
-        <Link to="/forgot-password" className="text-brand-700 hover:underline">Forgot password?</Link>
-      </p>
     </AuthCard>
   );
 }

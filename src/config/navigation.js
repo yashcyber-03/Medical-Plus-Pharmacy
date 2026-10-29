@@ -17,6 +17,7 @@ import {
 
 // "ready: true" means the page is built. Others show a placeholder.
 // "phase" tells you when that page will be implemented.
+// "adminOnly: true" means only administrators see and can open the page.
 export const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, ready: true },
   { to: "/medicines", label: "Medicines", icon: Pill, ready: true },
@@ -30,6 +31,6 @@ export const navItems = [
   { to: "/customers", label: "Customers", icon: Users, phase: 5 },
   { to: "/returns", label: "Sales returns", icon: Undo2, phase: 7 },
   { to: "/reports", label: "Reports", icon: BarChart3, phase: 7 },
-  { to: "/staff", label: "Staff & roles", icon: ShieldCheck, phase: 3 },
-  { to: "/settings", label: "Settings", icon: Settings, phase: 3 },
+  { to: "/staff", label: "Staff & roles", icon: ShieldCheck, phase: 3, adminOnly: true },
+  { to: "/settings", label: "Settings", icon: Settings, phase: 3, adminOnly: true },
 ];

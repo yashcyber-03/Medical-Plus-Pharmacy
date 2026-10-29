@@ -1,11 +1,14 @@
 import { NavLink } from "react-router-dom";
 import { Cross, X } from "lucide-react";
 import { navItems } from "../config/navigation";
+import { useAuth } from "../context/AuthContext";
 
 export default function Sidebar({ open, onClose }) {
+  const { isAdmin } = useAuth();
+  const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
+
   return (
     <>
-      {/* Dark overlay on mobile when the menu is open */}
       {open && (
         <div className="fixed inset-0 z-30 bg-slate-900/40 lg:hidden" onClick={onClose} aria-hidden="true" />
       )}
@@ -29,7 +32,7 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
-          {navItems.map(({ to, label, icon: Icon }) => (
+          {visibleItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

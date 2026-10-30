@@ -1,65 +1,50 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
-  Pill,
-  Boxes,
-  AlertTriangle,
-  Hourglass,
-  Ban,
-  IndianRupee,
-  Receipt,
-  ShoppingCart,
-  BellRing,
+  Pill, Boxes, AlertTriangle, Hourglass, Ban, IndianRupee, Receipt, ShoppingCart, BellRing, Loader2,
 } from "lucide-react";
 import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
+  ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
 } from "recharts";
 import PageHeader from "../components/PageHeader";
 import StatCard from "../components/StatCard";
 import StatusBadge from "../components/StatusBadge";
 import SampleDataNote from "../components/SampleDataNote";
-import {
-  medicines,
-  batches,
-  dailySales,
-  monthlyPurchaseVsSales,
-  recentTransactions,
-} from "../data/sampleData";
+import { dailySales, monthlyPurchaseVsSales, recentTransactions } from "../data/sampleData";
+import { useInventoryData } from "../hooks/useInventoryData";
 import { getBatchStatus, getEligibleStock, getStockStatus } from "../utils/inventory";
 import { formatMoney, formatDate } from "../utils/format";
 
 export default function Dashboard() {
-  // These numbers are calculated from the sample arrays using the same
-  // rules the real database queries will use later.
+  const { medicines, batches, loading, error, reload } = useInventoryData();
+
+  // Calculated from real database rows.
   const stats = useMemo(() => {
     const active = medicines.filter((m) => m.active);
     const lowStock = active.filter(
       (m) => getStockStatus(getEligibleStock(batches, m.id), m.reorder) !== "healthy"
     );
-    const liveBatches = batches.filter((b) => b.qty > 0);
-    const nearExpiry = liveBatches.filter((b) => getBatchStatus(b) === "near-expiry");
-    const expired = liveBatches.filter((b) => getBatchStatus(b) === "expired");
+    const nearExpiry = batches.filter((b) => getBatchStatus(b) === "near-expiry");
+    const expired = batches.filter((b) => getBatchStatus(b) === "expired");
     const units = batches
-      .filter((b) => getBatchStatus(b) !== "expired")
+      .filter((b) => {
+        const s = getBatchStatus(b);
+        return s === "healthy" || s === "near-expiry";
+      })
       .reduce((s, b) => s + b.qty, 0);
     return { products: active.length, units, lowStock, nearExpiry, expired };
-  }, []);
+  }, [medicines, batches]);
 
-  const alertRows = [
-    ...stats.expired.map((b) => ({ ...b, status: "expired" })),
-    ...stats.nearExpiry.map((b) => ({ ...b, status: "near-expiry" })),
-  ].slice(0, 5);
+  const alertRows = useMemo(
+    () =>
+      [
+        ...stats.expired.map((b) => ({ ...b, status: "expired" })),
+        ...stats.nearExpiry.map((b) => ({ ...b, status: "near-expiry" })),
+      ].slice(0, 5),
+    [stats]
+  );
 
-  const nameOf = (id) => medicines.find((m) => m.id === id)?.name ?? id;
+  const nameOf = (id) => medicines.find((m) => m.id === id)?.name ?? "Unknown medicine";
   const todaySalesPaise = recentTransactions.reduce((s, t) => s + t.totalPaise, 0);
 
   return (
@@ -73,11 +58,30 @@ export default function Dashboard() {
         </Link>
       </PageHeader>
 
-      <SampleDataNote />
+      <SampleDataNote>
+        Medicine and stock figures come from the database. Sales charts and transactions are sample data until billing is built (Phase 5).
+      </SampleDataNote>
+
+      {error && (
+        <div role="alert" className="mb-4 flex items-center justify-between gap-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <span>{error}</span>
+          <button onClick={reload} className="rounded border border-red-300 px-2 py-1 font-medium hover:bg-red-100">Retry</button>
+        </div>
+      )}
+      {loading && (
+        <p className="mb-4 flex items-center gap-2 text-sm text-slate-500">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading inventory…
+        </p>
+      )}
+      {!loading && !error && medicines.length === 0 && (
+        <p className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          No medicines in the database yet. Load the seed data, or add medicines on the Medicines page.
+        </p>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard label="Active medicines" value={stats.products} icon={Pill} />
-        <StatCard label="Sellable units in stock" value={stats.units} hint="Excludes expired batches" icon={Boxes} />
+        <StatCard label="Sellable units in stock" value={stats.units} hint="Excludes expired and quarantined batches" icon={Boxes} />
         <StatCard label="Low-stock medicines" value={stats.lowStock.length} hint="At or below reorder level" icon={AlertTriangle} tone="warning" />
         <StatCard label="Near-expiry batches" value={stats.nearExpiry.length} hint="Within 90 days" icon={Hourglass} tone="warning" />
         <StatCard label="Expired batches" value={stats.expired.length} hint="Need quarantine or disposal" icon={Ban} tone="danger" />
@@ -92,7 +96,7 @@ export default function Dashboard() {
               <AreaChart data={dailySales}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${(v / 100000).toFixed(1)}k`} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${v / 100}`} />
                 <Tooltip formatter={(v) => formatMoney(v)} />
                 <Area type="monotone" dataKey="sales" name="Sales" stroke="#059669" fill="#d1fae5" />
               </AreaChart>
@@ -107,7 +111,7 @@ export default function Dashboard() {
               <BarChart data={monthlyPurchaseVsSales}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${v / 100000}L`} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${(v / 100000).toFixed(1)}k`} />
                 <Tooltip formatter={(v) => formatMoney(v)} />
                 <Legend />
                 <Bar dataKey="purchases" name="Purchases" fill="#94a3b8" />

@@ -15,9 +15,10 @@ import {
   Settings,
 } from "lucide-react";
 
-// "ready: true" means the page is built. Others show a placeholder.
-// "phase" tells you when that page will be implemented.
-// "adminOnly: true" means only administrators see and can open the page.
+// ready: true      -> page is built; otherwise a placeholder is shown
+// phase            -> when the page will be built
+// adminOnly: true  -> hidden from pharmacists and blocked by ProtectedRoute
+//                     (real enforcement comes from database RLS)
 export const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, ready: true },
   { to: "/medicines", label: "Medicines", icon: Pill, ready: true },
@@ -26,8 +27,8 @@ export const navItems = [
   { to: "/suppliers", label: "Suppliers", icon: Truck, phase: 6 },
   { to: "/purchase-orders", label: "Purchase orders", icon: ClipboardList, phase: 6 },
   { to: "/goods-receipt", label: "Goods receipt", icon: PackageCheck, phase: 6 },
-  { to: "/inventory-movements", label: "Inventory movements", icon: ArrowLeftRight, phase: 4 },
-  { to: "/stock-alerts", label: "Stock alerts", icon: BellRing, phase: 4 },
+  { to: "/inventory-movements", label: "Inventory movements", icon: ArrowLeftRight, ready: true },
+  { to: "/stock-alerts", label: "Stock alerts", icon: BellRing, ready: true },
   { to: "/customers", label: "Customers", icon: Users, phase: 5 },
   { to: "/returns", label: "Sales returns", icon: Undo2, phase: 7 },
   { to: "/reports", label: "Reports", icon: BarChart3, phase: 7, adminOnly: true },

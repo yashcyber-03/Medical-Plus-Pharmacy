@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import {
-  Search, ChevronLeft, ChevronRight, ArrowUpDown, Plus, Pencil, PackagePlus, Loader2,
+  Search, ChevronLeft, ChevronRight, ArrowUpDown, Plus, Pencil, PackagePlus, Layers, Loader2,
 } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 import Modal from "../components/Modal";
 import MedicineForm from "../components/MedicineForm";
 import AddBatchForm from "../components/AddBatchForm";
+import BatchManager from "../components/BatchManager";
 import { useInventoryData } from "../hooks/useInventoryData";
 import { useAuth } from "../context/AuthContext";
 import { getEligibleStock, getStockStatus } from "../utils/inventory";
@@ -87,7 +88,7 @@ export default function Medicines() {
   );
 
   const inputCls = "rounded-md border border-slate-300 bg-white px-3 py-2 text-sm";
-  const colCount = isAdmin ? 7 : 6;
+  const colCount = 7;
 
   return (
     <>
@@ -150,7 +151,7 @@ export default function Medicines() {
               <SortHeader k="sellingPaise" className="text-right">Price</SortHeader>
               <SortHeader k="stock" className="text-right">Eligible stock</SortHeader>
               <th className="px-4 py-3 text-left font-medium">Status</th>
-              {isAdmin && <th className="px-4 py-3 text-right font-medium">Actions</th>}
+              <th className="px-4 py-3 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -193,9 +194,17 @@ export default function Medicines() {
                   {m.stock} <span className="text-xs text-slate-400">/ min {m.reorder}</span>
                 </td>
                 <td className="px-4 py-3"><StatusBadge status={m.stockStatus} /></td>
-                {isAdmin && (
-                  <td className="px-4 py-3">
+                <td className="px-4 py-3">
                     <div className="flex justify-end gap-1">
+                      <button
+                        onClick={() => openModal({ type: "batches", medicine: m })}
+                        className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                        aria-label={`View batches of ${m.name}`}
+                        title="View batches"
+                      >
+                        <Layers className="h-4 w-4" />
+                      </button>
+                      {isAdmin && (<>
                       <button
                         onClick={() => openModal({ type: "medicine", medicine: m })}
                         className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
@@ -213,9 +222,9 @@ export default function Medicines() {
                       >
                         <PackagePlus className="h-4 w-4" />
                       </button>
+                      </>)}
                     </div>
                   </td>
-                )}
               </tr>
             ))}
           </tbody>
@@ -253,6 +262,11 @@ export default function Medicines() {
             onSaved={handleSaved}
             onCancel={() => setModal(null)}
           />
+        </Modal>
+      )}
+      {modal?.type === "batches" && (
+        <Modal wide title={`Batches: ${modal.medicine.name}`} onClose={() => setModal(null)}>
+          <BatchManager medicine={modal.medicine} isAdmin={isAdmin} onChanged={reload} />
         </Modal>
       )}
       {modal?.type === "batch" && (

@@ -4,6 +4,8 @@ const STYLES = {
   "out-of-stock": { label: "Out of stock", cls: "bg-slate-100 text-slate-700 ring-slate-500/20" },
   "near-expiry": { label: "Near expiry", cls: "bg-orange-50 text-orange-800 ring-orange-600/20" },
   expired: { label: "Expired", cls: "bg-red-50 text-red-700 ring-red-600/20" },
+  quarantined: { label: "Quarantined", cls: "bg-purple-50 text-purple-700 ring-purple-600/20" },
+  disposed: { label: "Disposed", cls: "bg-slate-100 text-slate-500 ring-slate-400/20" },
   inactive: { label: "Inactive", cls: "bg-slate-100 text-slate-500 ring-slate-400/20" },
 };
 

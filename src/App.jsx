@@ -10,6 +10,9 @@ import StockAlerts from "./pages/StockAlerts";
 import InventoryMovements from "./pages/InventoryMovements";
 import Billing from "./pages/Billing";
 import Invoices from "./pages/Invoices";
+import Suppliers from "./pages/Suppliers";
+import PurchaseOrders from "./pages/PurchaseOrders";
+import GoodsReceipts from "./pages/GoodsReceipts";
 import Placeholder from "./pages/Placeholder";
 import NotFound from "./pages/NotFound";
 import { navItems } from "./config/navigation";
@@ -36,6 +39,9 @@ export default function App() {
         <Route path="inventory-movements" element={<InventoryMovements />} />
         <Route path="billing" element={<Billing />} />
         <Route path="invoices" element={<Invoices />} />
+        <Route path="suppliers" element={<ProtectedRoute roles={["admin"]}><Suppliers /></ProtectedRoute>} />
+        <Route path="purchase-orders" element={<ProtectedRoute roles={["admin"]}><PurchaseOrders /></ProtectedRoute>} />
+        <Route path="goods-receipt" element={<ProtectedRoute roles={["admin"]}><GoodsReceipts /></ProtectedRoute>} />
 
         {navItems
           .filter((item) => !item.ready)

@@ -6,6 +6,7 @@ export function friendlyError(err) {
   if (err.code === "23505") {
     if (msg.includes("barcode")) return "Another medicine already uses this barcode.";
     if (msg.includes("customers")) return "A customer with this phone number already exists.";
+    if (msg.includes("suppliers")) return "A supplier with this name already exists.";
     if (msg.includes("stock_batches")) return "This batch number already exists for this medicine.";
     return "This record already exists.";
   }

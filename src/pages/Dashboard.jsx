@@ -10,13 +10,17 @@ import PageHeader from "../components/PageHeader";
 import StatCard from "../components/StatCard";
 import StatusBadge from "../components/StatusBadge";
 import SampleDataNote from "../components/SampleDataNote";
-import { dailySales, monthlyPurchaseVsSales, recentTransactions } from "../data/sampleData";
+import { monthlyPurchaseVsSales } from "../data/sampleData";
+import { useSalesSummary } from "../hooks/useSalesSummary";
+import { useAuth } from "../context/AuthContext";
 import { useInventoryData } from "../hooks/useInventoryData";
 import { getBatchStatus, getEligibleStock, getStockStatus } from "../utils/inventory";
 import { formatMoney, formatDate } from "../utils/format";
 
 export default function Dashboard() {
+  const { isAdmin } = useAuth();
   const { medicines, batches, loading, error, reload } = useInventoryData();
+  const sales = useSalesSummary();
 
   // Calculated from real database rows.
   const stats = useMemo(() => {
@@ -45,7 +49,6 @@ export default function Dashboard() {
   );
 
   const nameOf = (id) => medicines.find((m) => m.id === id)?.name ?? "Unknown medicine";
-  const todaySalesPaise = recentTransactions.reduce((s, t) => s + t.totalPaise, 0);
 
   return (
     <>
@@ -59,7 +62,7 @@ export default function Dashboard() {
       </PageHeader>
 
       <SampleDataNote>
-        Medicine and stock figures come from the database. Sales charts and transactions are sample data until billing is built (Phase 5).
+        Medicine, stock and sales figures come from the database. Only the purchases chart is sample data until purchasing is built (Phase 6).
       </SampleDataNote>
 
       {error && (
@@ -67,6 +70,9 @@ export default function Dashboard() {
           <span>{error}</span>
           <button onClick={reload} className="rounded border border-red-300 px-2 py-1 font-medium hover:bg-red-100">Retry</button>
         </div>
+      )}
+      {sales.error && (
+        <p role="alert" className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">Sales could not be loaded: {sales.error}</p>
       )}
       {loading && (
         <p className="mb-4 flex items-center gap-2 text-sm text-slate-500">
@@ -85,15 +91,15 @@ export default function Dashboard() {
         <StatCard label="Low-stock medicines" value={stats.lowStock.length} hint="At or below reorder level" icon={AlertTriangle} tone="warning" />
         <StatCard label="Near-expiry batches" value={stats.nearExpiry.length} hint="Within 90 days" icon={Hourglass} tone="warning" />
         <StatCard label="Expired batches" value={stats.expired.length} hint="Need quarantine or disposal" icon={Ban} tone="danger" />
-        <StatCard label="Today's sales (sample)" value={formatMoney(todaySalesPaise)} hint={`${recentTransactions.length} transactions`} icon={IndianRupee} />
+        <StatCard label={isAdmin ? "Today's sales" : "Your sales today"} value={formatMoney(sales.todayTotal)} hint={`${sales.todayCount} transaction${sales.todayCount === 1 ? "" : "s"}`} icon={IndianRupee} />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <section className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="mb-3 text-sm font-semibold text-slate-900">Daily sales, last 14 days (sample)</h2>
+          <h2 className="mb-3 text-sm font-semibold text-slate-900">Daily sales, last 14 days</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dailySales}>
+              <AreaChart data={sales.daily}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${v / 100}`} />
@@ -145,9 +151,12 @@ export default function Dashboard() {
         </section>
 
         <section className="rounded-lg border border-slate-200 bg-white">
-          <h2 className="border-b border-slate-200 px-4 py-3 text-sm font-semibold text-slate-900">Recent transactions (sample)</h2>
+          <h2 className="border-b border-slate-200 px-4 py-3 text-sm font-semibold text-slate-900">Recent transactions</h2>
+          {sales.recent.length === 0 && (
+            <p className="p-4 text-sm text-slate-500">No sales yet. Completed bills appear here.</p>
+          )}
           <ul className="divide-y divide-slate-100">
-            {recentTransactions.map((t) => (
+            {sales.recent.map((t) => (
               <li key={t.invoice} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
                 <div className="flex items-center gap-3">
                   <Receipt className="h-4 w-4 text-slate-400" />

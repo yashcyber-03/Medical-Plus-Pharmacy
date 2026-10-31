@@ -7,6 +7,11 @@ const STYLES = {
   quarantined: { label: "Quarantined", cls: "bg-purple-50 text-purple-700 ring-purple-600/20" },
   disposed: { label: "Disposed", cls: "bg-slate-100 text-slate-500 ring-slate-400/20" },
   inactive: { label: "Inactive", cls: "bg-slate-100 text-slate-500 ring-slate-400/20" },
+  draft: { label: "Draft", cls: "bg-slate-100 text-slate-700 ring-slate-500/20" },
+  ordered: { label: "Ordered", cls: "bg-sky-50 text-sky-700 ring-sky-600/20" },
+  partially_received: { label: "Partly received", cls: "bg-amber-50 text-amber-800 ring-amber-600/20" },
+  received: { label: "Received", cls: "bg-emerald-50 text-emerald-700 ring-emerald-600/20" },
+  cancelled: { label: "Cancelled", cls: "bg-red-50 text-red-700 ring-red-600/20" },
 };
 
 export default function StatusBadge({ status }) {

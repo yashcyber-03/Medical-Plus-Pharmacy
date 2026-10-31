@@ -10,3 +10,21 @@ body {
   outline: 2px solid #059669;
   outline-offset: 2px;
 }
+
+/* Printing: show only the receipt */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #fff;
+  }
+}

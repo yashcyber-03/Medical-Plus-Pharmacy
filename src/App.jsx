@@ -8,6 +8,8 @@ import Dashboard from "./pages/Dashboard";
 import Medicines from "./pages/Medicines";
 import StockAlerts from "./pages/StockAlerts";
 import InventoryMovements from "./pages/InventoryMovements";
+import Billing from "./pages/Billing";
+import Invoices from "./pages/Invoices";
 import Placeholder from "./pages/Placeholder";
 import NotFound from "./pages/NotFound";
 import { navItems } from "./config/navigation";
@@ -32,6 +34,8 @@ export default function App() {
         <Route path="medicines" element={<Medicines />} />
         <Route path="stock-alerts" element={<StockAlerts />} />
         <Route path="inventory-movements" element={<InventoryMovements />} />
+        <Route path="billing" element={<Billing />} />
+        <Route path="invoices" element={<Invoices />} />
 
         {navItems
           .filter((item) => !item.ready)

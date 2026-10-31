@@ -34,6 +34,8 @@ function mapBatch(r) {
     qty: r.quantity_remaining,
     received: r.quantity_received,
     status: r.status,
+    sellingPaise: r.selling_price_paise ?? null,
+    createdAt: r.created_at,
   };
 }
 
@@ -61,7 +63,7 @@ export async function fetchMedicines() {
 export async function fetchBatches() {
   const { data, error } = await supabase
     .from("stock_batches")
-    .select("id, medicine_id, batch_number, expiry_date, quantity_received, quantity_remaining, status")
+    .select("id, medicine_id, batch_number, expiry_date, quantity_received, quantity_remaining, status, selling_price_paise, created_at")
     .gt("quantity_remaining", 0)
     .order("expiry_date");
   if (error) throw error;

@@ -10,7 +10,7 @@ import PageHeader from "../components/PageHeader";
 import StatCard from "../components/StatCard";
 import StatusBadge from "../components/StatusBadge";
 import SampleDataNote from "../components/SampleDataNote";
-import { monthlyPurchaseVsSales } from "../data/sampleData";
+import { useMonthlyTrend } from "../hooks/useMonthlyTrend";
 import { useSalesSummary } from "../hooks/useSalesSummary";
 import { useAuth } from "../context/AuthContext";
 import { useInventoryData } from "../hooks/useInventoryData";
@@ -21,6 +21,7 @@ export default function Dashboard() {
   const { isAdmin } = useAuth();
   const { medicines, batches, loading, error, reload } = useInventoryData();
   const sales = useSalesSummary();
+  const trend = useMonthlyTrend(isAdmin);
 
   // Calculated from real database rows.
   const stats = useMemo(() => {
@@ -62,7 +63,7 @@ export default function Dashboard() {
       </PageHeader>
 
       <SampleDataNote>
-        Medicine, stock and sales figures come from the database. Only the purchases chart is sample data until purchasing is built (Phase 6).
+        All figures come from the database. The monthly chart shows net sales (after discounts and approved returns) against goods received, both excluding GST.
       </SampleDataNote>
 
       {error && (
@@ -110,11 +111,13 @@ export default function Dashboard() {
           </div>
         </section>
 
+        {isAdmin && (
         <section className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="mb-3 text-sm font-semibold text-slate-900">Purchases vs sales, monthly (sample)</h2>
+          <h2 className="mb-3 text-sm font-semibold text-slate-900">Net sales vs purchases, monthly</h2>
+          {trend.error && <p role="alert" className="mb-2 text-xs text-red-600">{trend.error}</p>}
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyPurchaseVsSales}>
+              <BarChart data={trend.data}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${(v / 100000).toFixed(1)}k`} />
@@ -126,6 +129,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
         </section>
+        )}
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">

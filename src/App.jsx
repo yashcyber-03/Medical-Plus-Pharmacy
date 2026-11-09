@@ -15,6 +15,7 @@ import PurchaseOrders from "./pages/PurchaseOrders";
 import GoodsReceipts from "./pages/GoodsReceipts";
 import Returns from "./pages/Returns";
 import Customers from "./pages/Customers";
+import Reports from "./pages/Reports";
 import Placeholder from "./pages/Placeholder";
 import NotFound from "./pages/NotFound";
 import { navItems } from "./config/navigation";
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="invoices" element={<Invoices />} />
         <Route path="returns" element={<Returns />} />
         <Route path="customers" element={<Customers />} />
+        <Route path="reports" element={<ProtectedRoute roles={["admin"]}><Reports /></ProtectedRoute>} />
         <Route path="suppliers" element={<ProtectedRoute roles={["admin"]}><Suppliers /></ProtectedRoute>} />
         <Route path="purchase-orders" element={<ProtectedRoute roles={["admin"]}><PurchaseOrders /></ProtectedRoute>} />
         <Route path="goods-receipt" element={<ProtectedRoute roles={["admin"]}><GoodsReceipts /></ProtectedRoute>} />

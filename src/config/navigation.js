@@ -31,7 +31,7 @@ export const navItems = [
   { to: "/stock-alerts", label: "Stock alerts", icon: BellRing, ready: true },
   { to: "/customers", label: "Customers", icon: Users, ready: true },
   { to: "/returns", label: "Sales returns", icon: Undo2, ready: true },
-  { to: "/reports", label: "Reports", icon: BarChart3, phase: 7, adminOnly: true },
+  { to: "/reports", label: "Reports", icon: BarChart3, ready: true, adminOnly: true },
   { to: "/staff", label: "Staff & roles", icon: ShieldCheck, phase: 3, adminOnly: true },
   { to: "/settings", label: "Settings", icon: Settings, phase: 3, adminOnly: true },
 ];

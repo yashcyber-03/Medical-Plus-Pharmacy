@@ -35,6 +35,7 @@ export function useSalesSummary(days = 14) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         daily.push({
+          key: localDateKey(d),
           day: d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
           sales: totals.get(localDateKey(d)) ?? 0,
         });
